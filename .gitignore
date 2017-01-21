@@ -1,6 +1,7 @@
 # environment
 ide/
 .tmp/
+data/
 
 # logs
 logs
