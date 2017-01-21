@@ -1,0 +1,18 @@
+# environment
+ide/
+.tmp/
+
+# logs
+logs
+*.log
+
+# runtime
+pids
+*.pid
+*.seed
+
+# private
+config.json
+
+# dependencies
+node_modules
