@@ -7,7 +7,7 @@ var AWS = require('aws-sdk')
   , async = require('async')
   , mkdirp = require('mkdirp')
   , moment = require('moment')
-  , uuid = require('node-uuid')
+  , uuid = require('uuid')
   , inquirer = require('inquirer')
   , _ = require('lodash')
   , fs = require('fs');
@@ -35,7 +35,7 @@ var helpers = {
 ////////////
 
 exports = module.exports = {
-    name: 'listbucket',
+    name: 'indexbucket',
     meta: {
         title: 'index bucket',
         description: 'makes an index of a chosen bucket'
