@@ -35,7 +35,7 @@ var helpers = {
 ////////////
 
 exports = module.exports = {
-    name: 'listbucket',
+    name: 'indexbucket',
     meta: {
         title: 'index bucket',
         description: 'makes an index of a chosen bucket'
