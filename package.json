@@ -1,0 +1,44 @@
+{
+  "name": "s3tools",
+  "version": "0.0.1",
+  "description": "amazon web services s3 tools",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app --help && DEBUG=s3tools* node app -l",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/timkock/s3tools.git"
+  },
+  "keywords": [
+    "aws",
+    "s3",
+    "tools"
+  ],
+  "author": "Tim Kock <timkock@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/timkock/s3tools/issues"
+  },
+  "homepage": "https://github.com/timkock/s3tools#readme",
+  "dependencies": {
+    "async": "^2.1.4",
+    "aws-sdk": "^2.7.27",
+    "bluebird": "^3.4.7",
+    "bytes": "^2.4.0",
+    "colors": "^1.1.2",
+    "commander": "^2.9.0",
+    "debug": "^2.6.0",
+    "glob": "^7.1.1",
+    "humanize": "0.0.9",
+    "inquirer": "^2.0.0",
+    "lodash": "^4.17.4",
+    "minimist": "^1.2.0",
+    "mkdirp": "^0.5.1",
+    "moment": "^2.17.1",
+    "request": "^2.79.0",
+    "rimraf": "^2.5.4",
+    "uuid": "^3.0.1"
+  }
+}
