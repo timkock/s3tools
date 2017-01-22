@@ -115,16 +115,18 @@ exports = module.exports = {
                         // echo duplicates
                         console.log('DUPLICATE', Util.logspeed(START), bytes(_.sum(duplicatebytes)));
 
-                        // close rclient & wcb
-                        RCLIENT.end(true);
-                        return wcb(null, files.length);    
+                        // flush keys, close rclient & wcb
+                        RCLIENT.DEL([bucket,'*'].join(':'), function (err) {
+                            if(err) return wcb(err);
+                            RCLIENT.end(true);
+                            return wcb(null, files.length);
+                        });
 
                     });
                 });
                 
             });
         });
-
 
         // execute waterfall
         async.waterfall(tasks, done);
