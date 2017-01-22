@@ -3,6 +3,7 @@
 // dependencies
 var debug = require('debug')('s3tools:actions:checkdata')
   , inquirer = require('inquirer')
+  , redis = require('redis')
   , bytes = require('bytes')
   , async = require('async')
   , glob = require('glob')
@@ -52,7 +53,7 @@ exports = module.exports = {
         tasks.push(function (bucket, wcb) {
             glob(path.join(__appdir, 'data', 'buckets', bucket, '*.json'), function (err, files) {
                 if(err) return wcb(err);
-                wcb(null, _.map(files, function (file) {
+                wcb(null, bucket, _.map(files, function (file) {
                     return {
                         path: file,
                         name: path.basename(file),
@@ -63,27 +64,31 @@ exports = module.exports = {
         });
 
         // parse files
-        tasks.push(function (files, wcb) {
+        tasks.push(function (bucket, files, wcb) {
             var START = process.hrtime();
-            var hashmap = {};
+            var RCLIENT = redis.createClient();
             async.parallelLimit(_.map(files, function (file) {
                 return function (plcb) {
                     fs.readFile(file.path, function (err, data) {
                         if(err) return wcb(err);
                         data = JSON.parse(data);   
-                                              
-                        // hashmap keys
+                       
+                        // build hashmap
+                        var multi = RCLIENT.multi();
                         _.forEach(data, function (r) {
                             var hash = Util.hash([path.basename(r.Key), r.Size].join('|'));
-                            if(!hashmap[hash]) hashmap[hash] = [];
-                            hashmap[hash].push(r);
+                            multi.SADD([bucket,hash].join(':'), JSON.stringify(r));
                         });
 
                         // conclude batch with stats
-                        plcb(null, {
-                            bytes: _.sum(_.map(data, 'Size')),
-                            files: data.length
-                        });  
+                        multi.exec(function (err, replies) {
+                            if(err) return plcb(err);
+                            plcb(null, {
+                                replies: _.sum(replies),
+                                bytes: _.sum(_.map(data, 'Size')),
+                                files: data.length
+                            });  
+                        });
 
                     });
                 };
@@ -94,14 +99,28 @@ exports = module.exports = {
                 console.log('PARSED', Util.logspeed(START), bytes(_.sum(_.map(results, 'bytes'))), _.sum(_.map(results, 'files')), 'files');
                 
                 // DUPLICATES
-                var duplicates = _.filter(hashmap, function (r) {
-                    return r.length > 1;
-                });
-                console.log('DUPLICATE', bytes(_.reduce(duplicates, function (total, n) {
-                    return total + ((n.length-1)*_.head(n).Size);
-                }, 0)));
+                RCLIENT.KEYS([bucket,'*'].join(':'), function (err, results) {
+                    if(err) return wcb(err);
+                    async.parallelLimit(_.map(results, function (r) {
+                        return function (plcb) {
+                            RCLIENT.SMEMBERS(r, function (err, values) {
+                                if(err) return plcb(err);
+                                values = _.map(values, JSON.parse);
+                                plcb(null, values.length > 1 ? (values.length-1)*_.head(values).Size : 0);
+                            });
+                        };
+                    }), 4, function (err, duplicatebytes) {
+                        if(err) return wcb(err);
 
-                return wcb(null, files.length);
+                        // echo duplicates
+                        console.log('DUPLICATE', Util.logspeed(START), bytes(_.sum(duplicatebytes)));
+
+                        // close rclient & wcb
+                        RCLIENT.end(true);
+                        return wcb(null, files.length);    
+
+                    });
+                });
                 
             });
         });
