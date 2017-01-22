@@ -1,0 +1,27 @@
+'use strict';
+
+// dependencies
+var debug = require('debug')('s3tools:actions:ACTION');
+
+
+////////////
+// ACTION //
+////////////
+
+exports = module.exports = {
+    name: 'ACTION',
+    meta: {
+        title: 'TITLE',
+        description: 'DESCRIPTION'
+    },
+    command: function (args, done) {
+        debug('command');
+        return done(new Error('not implemented'));
+    },
+    interactive: function (args, done) {
+        debug('interactive');
+        return done(new Error('not implemented'));
+    },
+    steps: [
+    ]
+};

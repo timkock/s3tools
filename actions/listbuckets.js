@@ -1,8 +1,14 @@
 'use strict';
 
 // dependencies
-var AWS = require('aws-sdk')
+var debug = require('debug')('s3tools:actions:listbuckets')
+  , AWS = require('aws-sdk')
   , _ = require('lodash');
+
+
+////////////
+// ACTION //
+////////////
 
 exports = module.exports = {
     name: 'listbuckets',
@@ -11,9 +17,11 @@ exports = module.exports = {
         description: 'lists aws s3 buckets'
     },
     command: function (args, done) {
+        debug('command');
         return done(new Error('not implemented'));
     },
     interactive: function (args, done) {
+        debug('interactive');
         return done(new Error('not implemented'));
     },
     steps: [
