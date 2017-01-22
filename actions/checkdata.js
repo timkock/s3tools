@@ -99,9 +99,9 @@ exports = module.exports = {
                 console.log('PARSED', Util.logspeed(START), bytes(_.sum(_.map(results, 'bytes'))), _.sum(_.map(results, 'files')), 'files');
                 
                 // DUPLICATES
-                RCLIENT.KEYS([bucket,'*'].join(':'), function (err, results) {
+                RCLIENT.KEYS([bucket,'*'].join(':'), function (err, keys) {
                     if(err) return wcb(err);
-                    async.parallelLimit(_.map(results, function (r) {
+                    async.parallelLimit(_.map(keys, function (r) {
                         return function (plcb) {
                             RCLIENT.SMEMBERS(r, function (err, values) {
                                 if(err) return plcb(err);
@@ -116,7 +116,9 @@ exports = module.exports = {
                         console.log('DUPLICATE', Util.logspeed(START), bytes(_.sum(duplicatebytes)));
 
                         // flush keys, close rclient & wcb
-                        RCLIENT.DEL([bucket,'*'].join(':'), function (err) {
+                        var multi = RCLIENT.multi();
+                        _.forEach(keys, function (r) { multi.DEL(r); });
+                        multi.exec(function (err) {
                             if(err) return wcb(err);
                             RCLIENT.end(true);
                             return wcb(null, files.length);
